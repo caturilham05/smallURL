@@ -25,10 +25,12 @@ class ShortUrlController extends Controller
     {
         $request->validate([
             'original_url' => 'required|url:http,https',
+        ], [
+            'original_url.url' => 'Please include http or https protocol. eg: http:// or https://'
         ]);
 
-        $short_url = Str::random(6);
-        $short_url = ShortUrl::create([
+        $short_url = Str::random(7);
+        $short_url_created = ShortUrl::create([
             'original_url' => $request->input('original_url'),
             'short_url' => $short_url,
             'visits' => 0,
@@ -36,10 +38,10 @@ class ShortUrlController extends Controller
 
         return response()->json([
             'message' => 'Short URL created successfully',
-            'data' => [
-                'original_url' => $short_url->original_url,
+            'result' => [
+                'original_url' => $short_url_created->original_url,
                 'short_url' => url($short_url),
-                'visits' => $short_url->visits,
+                'visits' => $short_url_created->visits,
             ],
         ], 201);
     }
