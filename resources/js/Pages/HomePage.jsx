@@ -3,6 +3,7 @@ import axios from 'axios'
 import { Container, Typography, TextField, Button, Box, CircularProgress, Alert, Link as MuiLink, Paper } from '@mui/material'
 import { Head } from '@inertiajs/react'
 import Header from '@/Components/Header'
+import Link from '@mui/material/Link';
 
 // 1. Definisikan data fitur dalam sebuah array
 const features = [
@@ -88,12 +89,13 @@ function FeaturesSection() {
     );
 }
 
-
-function HomePage() {
+function HomePage({auth}) {
     const [url, setUrl] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [shortenedUrl, setShortenedUrl] = useState(null);
+    const currentDate = new Date();
+    const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -102,18 +104,18 @@ function HomePage() {
         setShortenedUrl('');
 
         try {
-            const body = { original_url : url };
+            const body = { original_url : url, user_id : auth.user?.id ?? null};
             const response = await axios.post('/api/shorten', body);
             setShortenedUrl(response.data.result);
         } catch (error) {
-            setError(error.response?.data?.message || err.message);
+            setError(error.response?.data?.message || error.message);
         } finally {
             setLoading(false);
         }
     }
     return (
         <>
-            <Header />
+            <Header/>
             <Head title="Free URL Shortener" />
             <Container maxWidth="lg" sx={{p: 4}}>
                 <Typography variant="h2"  component="h1" align="center" gutterBottom sx={{fontSize: '40px', fontWeight: 'bold'}}>
@@ -163,25 +165,31 @@ function HomePage() {
                     <Typography variant="subtitle1" align="center" color="text.secondary" sx={{mb: 1, mt: 1, fontSize: '17px'}}>
                         Create an account to shorten links, generate QR codes, create a link-in-bio hub, and more.
                     </Typography>
-                    <Box sx={{
-                        display: 'flex',
-                        justifyContent: 'center',
-                        width: '100%',
-                        mt: 3 // (Opsional) Memberi sedikit jarak di atasnya
-                    }}>
-                        <Button
-                            type="submit"
-                            variant="contained"
-                            size="medium"
-                            sx={{
-                                py: '15px',
-                                px: 5,
-                                whiteSpace: 'nowrap'
-                            }}
-                        >
-                            Start For Free
-                        </Button>
-                    </Box>
+                    {
+                        !auth.user && (
+                            <Box sx={{
+                                display: 'flex',
+                                justifyContent: 'center',
+                                width: '100%',
+                                mt: 3 // (Opsional) Memberi sedikit jarak di atasnya
+                            }}>
+                                <Button
+                                    type="submit"
+                                    variant="contained"
+                                    size="medium"
+                                    sx={{
+                                        py: '15px',
+                                        px: 5,
+                                        whiteSpace: 'nowrap'
+                                    }}
+                                    component={Link}
+                                    href={route('register')}
+                                >
+                                    Start For Free
+                                </Button>
+                            </Box>
+                        )
+                    }
                 </Paper>
             </Container>
             <Box
@@ -212,23 +220,14 @@ function HomePage() {
             <Box
                 sx={{
                     width: '100%',          // 1. Mengambil lebar penuh layar
-                    py: 8,                  // 2. Padding atas & bawah (py = padding y-axis)
-                    backgroundColor: '#004c8c' // 3. Warna background biru tua
+                    py: 3,                  // 2. Padding atas & bawah (py = padding y-axis)
+                    backgroundColor: '#004c8c', // 3. Warna background biru tua
                 }}
             >
-                <Container maxWidth="md" sx={{pb: 3}}>
-                    {/* <Typography color='white' align='center' gutterBottom sx={{fontSize: '25px', fontWeight: 'bold', mb: 2}}>
-                        A fast, easy, and free link shortener
+                <Container maxWidth="md">
+                    <Typography variant="subtitle1" color="white" align='center' sx={{fontSize: '17px'}}>
+                        &copy; Copyright {currentDate.getFullYear()}, {appName}. All Right Reserved.
                     </Typography>
-                    <Typography variant="subtitle1" color="white" align='justify' sx={{mb: 1, mt: 1, fontSize: '17px'}}>
-                        Use this free URL shortener to change long, ugly links into memorable and trackable short URLs. The best free and very no pricing link shortener alternative to Bitly, Tinyurl, and Google link shorteners. Free short links for any social media platform, website, SMS, email, ads, and more. Generate short links for Instagram, LinkedIn, Facebook, X, TikTok and more.
-                    </Typography>
-                    <Typography color='white' align='center' gutterBottom sx={{fontSize: '25px', fontWeight: 'bold', mb: 2, mt: 3}}>
-                        Shorten, share and track
-                    </Typography>
-                    <Typography variant="subtitle1" color="white" align='justify' sx={{fontSize: '17px'}}>
-                        Your shortened URLs can be used in publications, documents, advertisements, blogs, forums, instant messages, and other locations. Track statistics for your business and projects by monitoring the number of hits from your URL with our click counter.
-                    </Typography> */}
                 </Container>
             </Box>
         </>

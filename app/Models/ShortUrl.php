@@ -12,6 +12,7 @@ class ShortUrl extends Model
     protected $fillable = [
         'original_url',
         'short_url',
-        'visits'
+        'visits',
+        'user_id'
     ];
 }

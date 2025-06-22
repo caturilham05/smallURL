@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\ShortUrl;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Redirect;
 
@@ -15,7 +16,8 @@ class ShortUrlController extends Controller
      */
     public function index()
     {
-        //
+        // $user = auth();
+        // dd($user);
     }
 
     /**
@@ -34,9 +36,11 @@ class ShortUrlController extends Controller
             'original_url' => $request->input('original_url'),
             'short_url' => $short_url,
             'visits' => 0,
+            'user_id' => $request->user_id
         ]);
 
         return response()->json([
+            'ok' => 1,
             'message' => 'Short URL created successfully',
             'result' => [
                 'original_url' => $short_url_created->original_url,
@@ -67,8 +71,41 @@ class ShortUrlController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(int $id)
     {
-        //
+        $link = ShortUrl::findOrFail($id);
+        $link->delete();
+
+        return response()->json([
+            'ok' => 1,
+            'message' => sprintf('link %s berhasil dihapus', $link->original_url),
+            'result' => []
+        ], 200);
+    }
+
+    public function show_links_by_user_id(int $user_id, Request $request)
+    {
+        $user = Auth::user();
+        if ($user->id != $user_id) {
+            return response()->json([
+                'ok' => 0,
+                'message' => 'you dont have access this api',
+                'result' => []
+            ], 400);
+        }
+        $links = ShortUrl::where('user_id', $user_id)->latest()->paginate($request->limit);
+        if ($links->isEmpty()) {
+            return response()->json([
+                'ok' => 0,
+                'message' => 'your dont have data short url',
+                'result' => []
+            ], 404);
+        }
+
+        return response()->json([
+            'ok' => 1,
+            'message' => 'fetch data successfully',
+            'result' => $links
+        ], 200);
     }
 }
